@@ -23,7 +23,6 @@ const Contact: React.FC = () => {
   const { ref } = useSectionInView("Contact");
   const { language } = useLanguage();
   const { theme } = useTheme();
-  const [error, setError] = useState<string | any>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -37,7 +36,6 @@ const Contact: React.FC = () => {
 
   // ✅ FIXED FORM SUBMIT - EmailJS template parameters corrected
   const notifySentForm: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    setError(null);
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -174,7 +172,6 @@ const Contact: React.FC = () => {
         toast.error(language === "DE" ? toastMessages.failedEmailSent.de : toastMessages.failedEmailSent.en);
       }
 
-      setError("An Error occurred, try again later");
     } finally {
       setIsSubmitting(false);
     }
@@ -330,7 +327,6 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
                     : message
                 }
                 required
-                disabled={isSubmitting}
                 onFocus={() => {
                   handleInputFocus(input.name);
                   setLastUpdatedField(input.name);
@@ -357,7 +353,6 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
               name={contactData.textarea.name}
               value={message}
               required
-              disabled={isSubmitting}
               onFocus={() => {
                 handleInputFocus(contactData.textarea.name);
                 setLastUpdatedField(contactData.textarea.name);
@@ -378,7 +373,6 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
                 <input
                   type="checkbox"
                   required
-                  disabled={isSubmitting}
                   name="checkbox-label"
                   id="checkbox-label"
                 />
@@ -408,8 +402,8 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
               iconcolor={contactData.colors.icon}
               type="submit"
               elementType="input"
-              disabled={isSubmitting}
             />
+
             <ToastContainer
               className="w-max text-3xl block p-3 max-lg:w-full "
               position="bottom-center"
