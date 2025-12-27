@@ -12,7 +12,9 @@ const ServiceStatus = () => {
 
   const getStatusData = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_SERVICESTATUS_URL || 'http://localhost:5000/api/status';
+// ✅ CORRECT - Use same env var as Contact
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+fetch(`${apiBaseUrl}/status`)
 
       const response = await axios.get<StatusData>(apiUrl, {
         timeout: 5000, // 5 second timeout
