@@ -12,8 +12,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import "react-toastify/dist/ReactToastify.css";
 
 const Contact: React.FC = () => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
-
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "https://portfolio-backend-1-hvs1.onrender.com/api";
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
@@ -50,24 +49,7 @@ const Contact: React.FC = () => {
       let emailSent = false;
 
       // ✅ TRY METHOD 1: EmailJS (if configured)
-      if (
-        import.meta.env.VITE_EMAILJS_SERVICE_ID &&
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID &&
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      ) {
-        try {
-          await emailjs.sendForm(
-            import.meta.env.VITE_EMAILJS_SERVICE_ID,
-            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-            e.currentTarget,
-            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-          );
-          console.log("✅ EmailJS sent successfully!");
-          emailSent = true;
-        } catch (emailJsError) {
-          console.warn("⚠️ EmailJS failed, trying backend...", emailJsError);
-        }
-      }
+
 
       // ✅ TRY METHOD 2: Your Backend (if EmailJS failed or not configured)
       if (!emailSent && apiBaseUrl) {
@@ -93,7 +75,24 @@ const Contact: React.FC = () => {
           throw backendError;
         }
       }
-
+ if (
+        import.meta.env.VITE_EMAILJS_SERVICE_ID &&
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID &&
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      ) {
+        try {
+          await emailjs.sendForm(
+            import.meta.env.VITE_EMAILJS_SERVICE_ID,
+            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+            e.currentTarget,
+            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+          );
+          console.log("✅ EmailJS sent successfully!");
+          emailSent = true;
+        } catch (emailJsError) {
+          console.warn("⚠️ EmailJS failed, trying backend...", emailJsError);
+        }
+      }
       // ✅ FIXED ACKNOWLEDGMENT EMAIL - Standard EmailJS parameters
       if (emailSent &&
           import.meta.env.VITE_EMAILJS_SERVICE_ID &&
