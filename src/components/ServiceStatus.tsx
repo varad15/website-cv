@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import axios from 'axios';
 
 interface StatusData {
@@ -10,18 +10,16 @@ const ServiceStatus = () => {
   const [status, setStatus] = useState<'online' | 'offline' | 'loading'>('loading');
   const [lastChecked, setLastChecked] = useState<string>('');
 
+  // ✅ SINGLE apiUrl definition - used everywhere
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://portfolio-backend-1-hvs1.onrender.com/api";
+
   const getStatusData = async () => {
     try {
-// ✅ CORRECT - Use same env var as Contact
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-fetch(`${apiBaseUrl}/status`)
-
-      const response = await axios.get<StatusData>(apiUrl, {
+      const response = await axios.get<StatusData>(`${apiUrl}/health`, {
         timeout: 5000, // 5 second timeout
       });
 
-      // Check if response has data
-      if (response.data) {
+      if (response.data && response.data.status === 'OK') {
         setStatus('online');
         setLastChecked(new Date().toLocaleTimeString());
       } else {
@@ -59,9 +57,9 @@ fetch(`${apiBaseUrl}/status`)
   const getStatusText = () => {
     switch (status) {
       case 'online':
-        return 'Service Online';
+        return 'Backend Online';
       case 'offline':
-        return 'Service Offline';
+        return 'Backend Offline';
       case 'loading':
         return 'Checking...';
       default:
@@ -71,7 +69,7 @@ fetch(`${apiBaseUrl}/status`)
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-lg">
+      <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-white/50 dark:border-gray-700/50">
         <div className={`w-3 h-3 rounded-full ${getStatusColor()}`} />
         <span className="text-sm font-medium">
           {getStatusText()}
