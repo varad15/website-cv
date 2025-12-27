@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Button from "./Button";
 import axios from "axios";
 import { Highlight, themes } from "prism-react-renderer";
-import emailjs from "@emailjs/browser";
 import { contactData, toastMessages } from "../assets/lib/data.tsx";
 import { useSectionInView } from "../assets/lib/hooks";
 import { useLanguage } from "../context/language-context";
@@ -12,7 +11,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import "react-toastify/dist/ReactToastify.css";
 
 const Contact: React.FC = () => {
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "https://portfolio-backend-1-hvs1.onrender.com/api";
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "https://portfolio-backend-1-hvs1.onrender.com/api";
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
@@ -33,7 +32,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "https://portfolio-backe
   const scaleProgess = useTransform(scrollYProgress, [0, 1], [0.8, 1]);
   const opacityProgess = useTransform(scrollYProgress, [0, 1], [0.6, 1]);
 
-  // ✅ FIXED FORM SUBMIT - EmailJS template parameters corrected
+  // ✅ SIMPLIFIED: Backend ONLY - 2 Emails (You + User Ack)
   const notifySentForm: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -46,131 +45,66 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "https://portfolio-backe
     };
 
     try {
-      let emailSent = false;
+      console.log('🚀 Sending to backend:', `${apiBaseUrl}/contact`);
 
-      // ✅ TRY METHOD 1: EmailJS (if configured)
+      const response = await axios.post(`${apiBaseUrl}/contact`, formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 60000,  // 60s for Gmail cold start
+      });
 
+      if (response.data.success) {
+        console.log('✅ Backend response:', response.data.message);
 
-      // ✅ TRY METHOD 2: Your Backend (if EmailJS failed or not configured)
-      if (!emailSent && apiBaseUrl) {
-        try {
-          const response = await axios.post(`${apiBaseUrl}/contact`, formData, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            timeout: 45000,
-          });
-
-          if (response.data.success) {
-            console.log("✅ Backend sent successfully!");
-            emailSent = true;
-          }
-        } catch (backendError) {
-          console.error("❌ Backend also failed:", backendError);
-          if (axios.isAxiosError(backendError)) {
-            if (backendError.code === 'ECONNABORTED' || backendError.message.includes('Network Error')) {
-              throw new Error('Backend server is not running. Please start your backend server.');
-            }
-          }
-          throw backendError;
-        }
-      }
- if (
-        import.meta.env.VITE_EMAILJS_SERVICE_ID &&
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID &&
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      ) {
-        try {
-          await emailjs.sendForm(
-            import.meta.env.VITE_EMAILJS_SERVICE_ID,
-            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-            e.currentTarget,
-            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-          );
-          console.log("✅ EmailJS sent successfully!");
-          emailSent = true;
-        } catch (emailJsError) {
-          console.warn("⚠️ EmailJS failed, trying backend...", emailJsError);
-        }
-      }
-      // ✅ FIXED ACKNOWLEDGMENT EMAIL - Standard EmailJS parameters
-      if (emailSent &&
-          import.meta.env.VITE_EMAILJS_SERVICE_ID &&
-          import.meta.env.VITE_EMAILJS_ACK_TEMPLATE_ID &&
-          import.meta.env.VITE_EMAILJS_PUBLIC_KEY &&
-          email && name && subject && message) {
-        try {
-          const ackServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-          const ackTemplateId = import.meta.env.VITE_EMAILJS_ACK_TEMPLATE_ID;
-          const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-          console.log("🔄 Sending acknowledgment with:", {
-            serviceId: ackServiceId,
-            templateId: ackTemplateId,
-            toEmail: email
-          });
-
-          // ✅ FIXED: Standard EmailJS template parameters (NOT custom ones)
-          const ackFormData = {
-            from_name: name,           // ✅ Standard: sender's name
-            to_email: email,           // ✅ Standard: recipient email
-            subject: `Re: ${subject}`, // ✅ Standard: email subject
-            message: message,          // ✅ Standard: email message
-            reply_to: email            // ✅ Standard: reply-to field
-          };
-
-          const result = await emailjs.send(
-            ackServiceId,
-            ackTemplateId,
-            ackFormData,
-            publicKey
-          );
-          console.log("✅ ✅ Acknowledgment email sent successfully!", result);
-        } catch (ackError: any) {
-          console.error("❌ Acknowledgment email FAILED:", ackError);
-          console.error("Error details:", ackError.status, ackError.text);
-        }
-      }
-
-      // ✅ SUCCESS
-      if (emailSent) {
-        if (language === "DE") {
-          toast.success(toastMessages.successEmailSent.de);
-        } else {
-          toast.success(toastMessages.successEmailSent.en);
-        }
-
-        if (formRef.current) {
-          formRef.current.reset();
-        }
+        // Reset form
+        if (formRef.current) formRef.current.reset();
         setName("");
         setEmail("");
         setSubject("");
         setMessage("");
         setLastUpdatedField(null);
+
+        // ✅ 2 EMAILS SUCCESS TOAST
+        toast.success(
+          language === "DE"
+            ? "✨ 2 E-Mails gesendet! Danke!"
+            : "✨ 2 Emails sent successfully! Thank you!"
+        );
       } else {
-        throw new Error('No email service configured. Please set up EmailJS or Backend.');
+        throw new Error('Backend returned failure');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Form submission error:", error);
 
       if (axios.isAxiosError(error)) {
-        if (error.message.includes('Backend server is not running')) {
-          toast.error("🦄 Backend server is not running. Please start the backend first or configure EmailJS.");
+        if (error.code === 'ECONNABORTED') {
+          toast.error(
+            language === "DE"
+              ? "⏳ Backend startet auf (Render Free Tier). 30s warten."
+              : "⏳ Backend waking up (Render Free). Wait 30s."
+          );
+        } else if (error.response?.status === 500) {
+          toast.error(
+            language === "DE"
+              ? "❌ Backend Fehler. Render Logs prüfen."
+              : "❌ Backend error. Check Render logs."
+          );
         } else {
-          toast.error(language === "DE" ? toastMessages.failedEmailSent.de : toastMessages.failedEmailSent.en);
-        }
-      } else if (error instanceof Error) {
-        if (error.message.includes('No email service configured')) {
-          toast.error("🦄 Please configure EmailJS or start the backend server. Check .env file.");
-        } else {
-          toast.error(language === "DE" ? toastMessages.failedEmailSent.de : toastMessages.failedEmailSent.en);
+          toast.error(
+            language === "DE"
+              ? toastMessages.failedEmailSent.de
+              : toastMessages.failedEmailSent.en
+          );
         }
       } else {
-        toast.error(language === "DE" ? toastMessages.failedEmailSent.de : toastMessages.failedEmailSent.en);
+        toast.error(
+          language === "DE"
+            ? "❌ Verbindung fehlgeschlagen. Backend prüfen."
+            : "❌ Connection failed. Check backend."
+        );
       }
-
     } finally {
       setIsSubmitting(false);
     }
@@ -340,6 +274,7 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
                     ? "bg-[--blackblue] dark-mode-shadow "
                     : "bg-[--icewhite] dark-shadow "
                 } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isSubmitting}
               />
             ))}
             <textarea
@@ -366,6 +301,7 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
                   ? "bg-[--blackblue] dark-mode-shadow"
                   : "bg-[--icewhite] dark-shadow"
               } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isSubmitting}
             />
             <div className="privacy-checkbox flex gap-16">
               <label className="block w-2 h-2 cursor-pointer" htmlFor="checkbox-label">
@@ -374,6 +310,7 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
                   required
                   name="checkbox-label"
                   id="checkbox-label"
+                  disabled={isSubmitting}
                 />
                 <span className="checkbox"></span>
               </label>
@@ -401,6 +338,7 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
               iconcolor={contactData.colors.icon}
               type="submit"
               elementType="input"
+              disabled={isSubmitting}
             />
 
             <ToastContainer
