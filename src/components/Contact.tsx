@@ -58,7 +58,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "https://portfolio-backe
             headers: {
               'Content-Type': 'application/json',
             },
-            timeout: 10000,
+            timeout: 45000,
           });
 
           if (response.data.success) {
