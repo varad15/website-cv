@@ -32,7 +32,7 @@ const Contact: React.FC = () => {
   const scaleProgess = useTransform(scrollYProgress, [0, 1], [0.8, 1]);
   const opacityProgess = useTransform(scrollYProgress, [0, 1], [0.6, 1]);
 
-  // ✅ SIMPLIFIED: Backend ONLY - 2 Emails (You + User Ack)
+  // ✅ COMPLETE ERROR HANDLING: Backend ONLY - 2 Emails (You + User Ack)
   const notifySentForm: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -51,13 +51,13 @@ const Contact: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        timeout: 60000,  // 60s for Gmail cold start
+        timeout: 60000,  // 60s for Gmail cold start + Render
       });
 
       if (response.data.success) {
         console.log('✅ Backend response:', response.data.message);
 
-        // Reset form
+        // Reset form completely
         if (formRef.current) formRef.current.reset();
         setName("");
         setEmail("");
@@ -72,7 +72,7 @@ const Contact: React.FC = () => {
             : "✨ 2 Emails sent successfully! Thank you!"
         );
       } else {
-        throw new Error('Backend returned failure');
+        throw new Error(response.data.error || 'Backend returned failure');
       }
 
     } catch (error: any) {
@@ -82,27 +82,46 @@ const Contact: React.FC = () => {
         if (error.code === 'ECONNABORTED') {
           toast.error(
             language === "DE"
-              ? "⏳ Backend startet auf (Render Free Tier). 30s warten."
+              ? "⏳ Backend startet auf (Render Free). 30s warten."
               : "⏳ Backend waking up (Render Free). Wait 30s."
+          );
+        } else if (error.response?.status === 0) {
+          toast.error(
+            language === "DE"
+              ? "❌ Backend nicht erreichbar. Status prüfen."
+              : "❌ Backend unreachable. Check status indicator."
+          );
+        } else if (error.response?.data?.success === false) {
+          // SHOW ACTUAL BACKEND ERROR
+          toast.error(
+            language === "DE"
+              ? error.response.data.error || "Backend Fehler"
+              : error.response.data.error || "Backend error"
           );
         } else if (error.response?.status === 500) {
           toast.error(
             language === "DE"
-              ? "❌ Backend Fehler. Render Logs prüfen."
-              : "❌ Backend error. Check Render logs."
+              ? "❌ Server Fehler. Render Logs prüfen."
+              : "❌ Server error. Check Render logs."
+          );
+        } else if (error.response?.status === 400) {
+          toast.error(
+            language === "DE"
+              ? "❌ Formular unvollständig"
+              : "❌ Incomplete form data"
           );
         } else {
           toast.error(
             language === "DE"
-              ? toastMessages.failedEmailSent.de
-              : toastMessages.failedEmailSent.en
+              ? `❌ HTTP ${error.response?.status || 'Unknown'}: ${error.message}`
+              : `❌ HTTP ${error.response?.status || 'Unknown'}: ${error.message}`
           );
         }
       } else {
         toast.error(
           language === "DE"
-            ? "❌ Verbindung fehlgeschlagen. Backend prüfen."
-            : "❌ Connection failed. Check backend."
+            ? "❌ Unerwarteter Fehler. Seite neu laden."
+            : "❌ Unexpected error. Reload page."
         );
       }
     } finally {
