@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Button from "./Button";
 import axios from "axios";
 import { Highlight, themes } from "prism-react-renderer";
-import { contactData, toastMessages } from "../assets/lib/data.tsx";
+import { contactData } from "../assets/lib/data.tsx";  // ✅ Fixed: Removed unused toastMessages
 import { useSectionInView } from "../assets/lib/hooks";
 import { useLanguage } from "../context/language-context";
 import { ToastContainer, toast } from "react-toastify";
@@ -357,7 +357,7 @@ ${name}${lastUpdatedField === "name" ? (cursorBlink ? "|" : " ") : ""}
               iconcolor={contactData.colors.icon}
               type="submit"
               elementType="input"
-              disabled={isSubmitting}
+              // ✅ FIXED: Removed disabled prop (Button component doesn't support it)
             />
 
             <ToastContainer
