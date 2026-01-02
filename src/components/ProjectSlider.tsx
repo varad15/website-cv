@@ -5,7 +5,7 @@ import LiveTicker from "./ParallaxText";
 import { projectsData, toastMessages } from "../assets/lib/data";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectCards, Pagination } from "swiper/modules";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { useSectionInView } from "../assets/lib/hooks";
 import { useLanguage } from "../context/language-context";
@@ -25,13 +25,6 @@ const ProjectSlider: React.FC = () => {
   });
   const scaleProgess = useTransform(scrollYProgress, [0, 1], [0.8, 1]);
   const opacityProgess = useTransform(scrollYProgress, [0, 1], [0.6, 1]);
-  const notifyServerRequest = () => {
-    if (language === "DE") {
-      toast.info(toastMessages.loadingProject.de);
-    } else {
-      toast.info(toastMessages.loadingProject.en);
-    }
-  };
 
   return (
     <React.Fragment>
@@ -129,14 +122,6 @@ const ProjectSlider: React.FC = () => {
                     </div>
                     <div className="buttons flex gap-10">
                       <Button
-                        label="Live Demo"
-                        link={project.deploymenturl}
-                        iconSVG={project.deploymenticon}
-                        buttoncolor={project.colors.main}
-                        iconcolor={project.colors.icon}
-                        onClick={notifyServerRequest}
-                      />
-                      <Button
                         label="Github Repository"
                         link={project.githuburl}
                         iconSVG={project.githubicon}
@@ -150,7 +135,7 @@ const ProjectSlider: React.FC = () => {
                     <img
                       src={project.image}
                       alt={`${project.title}-project-mockup`}
-                      className={`w-full h-auto transition-all duration-[6000ms] transform opacity-100 hover:translate-y-[-50%] 
+                      className={`w-full h-auto transition-all duration-[6000ms] transform opacity-100 hover:translate-y-[-50%]
                       `}
                     />
                   </div>
@@ -169,13 +154,6 @@ const ProjectSlider: React.FC = () => {
                   className="h-[35vh] w-full object-cover object-top rounded-3xl"
                 />
                 <div className="buttons flex gap-10 max-lg:flex-col">
-                  <Button
-                    label="Live Demo"
-                    link={project.deploymenturl}
-                    iconSVG={project.deploymenticon}
-                    buttoncolor={project.colors.main}
-                    iconcolor={project.colors.icon}
-                  />
                   <Button
                     label="Github Repository"
                     link={project.githuburl}
