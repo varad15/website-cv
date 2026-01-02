@@ -2,7 +2,7 @@ import bannerBg from "../assets/img/bannerbg.webp";
 import React, { useRef } from "react";
 import Button from "./Button";
 import LiveTicker from "./ParallaxText";
-import { projectsData, toastMessages } from "../assets/lib/data";
+import { projectsData } from "../assets/lib/data";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectCards, Pagination } from "swiper/modules";
 import { ToastContainer } from "react-toastify";
