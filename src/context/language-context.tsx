@@ -47,6 +47,13 @@ export default function LanguageContextProvider({
     }
   }, []);
 
+  useEffect(() => {
+    // Prevent browser translate popup by setting correct lang and no-translate
+    document.documentElement.setAttribute("lang", "en");
+    document.documentElement.setAttribute("translate", "no");
+    document.documentElement.classList.add("notranslate");
+  }, []);
+
   return (
     <LanguageContext.Provider
       value={{
